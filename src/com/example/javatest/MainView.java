@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -20,7 +22,7 @@ import android.view.SurfaceView;
  * @author seth16888
  *
  */
-public class MainView extends SurfaceView implements Callback,Runnable{
+public class MainView extends SurfaceView implements Callback,Runnable,OnGestureListener{
 	private SurfaceHolder sfh;	//SurfaceView的控制器
 	private MainActivity activity;		//主控界面的引用
 	private Canvas canvas;
@@ -30,6 +32,9 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	private Player player;
 	private Bitmap bmpPlayer;//游戏主角飞机
 	private Bitmap bmpPlayerHp;//主角飞机血量
+	private GestureDetector mGestureDetetor;	//手势检测
+	private	 int verticalMinDistance = 20;  
+	private	 int minVelocity         = 0; 	//滑动检测参数
 	
 	private Thread th;	//游戏主线程
 	
@@ -50,6 +55,8 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 		setFocusableInTouchMode(true);
 		// 设置背景高亮
 		this.setKeepScreenOn(true);
+		
+		mGestureDetetor = new GestureDetector(this);
 	}
 	
 	@Override
@@ -177,6 +184,65 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	public boolean onTouchEvent(MotionEvent event) {
 		Log.d("1","onTouchEvent");
 		return super.onTouchEvent(event);
+	}
+
+	@Override
+	public boolean onDown(MotionEvent e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY) {
+		Log.i("1","onFling");
+
+	    if	(e1.getX() - e2.getX() > verticalMinDistance && Math.abs(velocityX) > minVelocity) { 
+	    	//像左
+	    	int mmx = player.x - (int)(e1.getX() - e2.getX());
+	    	player.setmXMoveTo(mmx);
+	    }
+	    if (e2.getX() - e1.getX() > verticalMinDistance && Math.abs(velocityX) > minVelocity) { 
+	    	//向右
+	    	int mmx = player.x + (int)(e2.getX() - e1.getX());
+	    	player.setmXMoveTo(mmx);
+	    }
+	    if(e2.getY() < e1.getY()){
+	    	//向上
+	    	int mmy = player.y - (int)(e2.getY() - e1.getY());
+	    	player.setmYMoveTo(mmy);
+	    }
+	    if(e2.getY() > e1.getY()){
+	    	//向下
+	    	int mmy = player.y + (int)(e1.getY() - e2.getY());
+	    	player.setmYMoveTo(mmy);
+	    }
+		return false;
+	}
+
+	@Override
+	public void onLongPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+			float distanceY) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent e) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	

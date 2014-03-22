@@ -20,7 +20,51 @@ public class Player {
 	//主角移动速度
 	private int speed = 5;
 	//主角移动标识（基础章节已讲解，你懂得）
-	private boolean isUp, isDown, isLeft, isRight;
+	public boolean isUp, isDown, isLeft, isRight;
+	public boolean isMoving = false;
+	private int mXMove,mYMove;	//X,Y坐标移动距离
+	public int getmXMove() {
+		return mXMove;
+	}
+
+	public void setmXMove(int mXMove) {
+		//判断屏幕X边界
+		int mX = x + mXMove;
+				if (mX + bmpPlayer.getWidth() >= MainView.screenW) {
+					this.setmXMoveTo(MainView.screenW - bmpPlayer.getWidth()) ;
+					this.mXMove = MainView.screenW - bmpPlayer.getWidth() - x;
+				} else if (mX <= 0) {
+					this.setmXMoveTo(0);
+				}
+		this.mXMove = mXMove;
+	}
+
+	public int getmYMove() {
+		return mYMove;
+	}
+
+	public void setmYMove(int mYMove) {
+		this.mYMove = mYMove;
+	}
+
+	public int getmXMoveTo() {
+		return mXMoveTo;
+	}
+
+	public void setmXMoveTo(int mXMoveTo) {
+		this.mXMoveTo = mXMoveTo;
+	}
+
+	public int getmYMoveTo() {
+		return mYMoveTo;
+	}
+
+	public void setmYMoveTo(int mYMoveTo) {
+		this.mYMoveTo = mYMoveTo;
+	}
+
+	private int mXMoveTo = -1,mYMoveTo = -1;
+	
 	
 	//主角的构造函数
 	public Player(Bitmap bmpPlayer, Bitmap bmpPlayerHp) {
@@ -75,6 +119,18 @@ public class Player {
 	//主角的逻辑
 	public void logic() {
 		//处理主角移动
+		if(mXMoveTo > 0 && mXMoveTo < x){
+			isLeft = true;
+		}
+		if(mXMoveTo > 0 && mXMoveTo > x){
+			isRight = true;
+		}
+		if(mYMoveTo > 0 && mYMoveTo > y){
+			isDown = true;
+		}
+		if(mYMoveTo > 0 && mYMoveTo < y){
+			isUp = true;
+		}
 		if (isLeft) {
 			x -= speed;
 		}
@@ -90,14 +146,23 @@ public class Player {
 		//判断屏幕X边界
 		if (x + bmpPlayer.getWidth() >= MainView.screenW) {
 			x = MainView.screenW - bmpPlayer.getWidth();
+			mXMoveTo = -1;
 		} else if (x <= 0) {
 			x = 0;
+			mXMoveTo = -1;
 		}
 		//判断屏幕Y边界
 		if (y + bmpPlayer.getHeight() >= MainView.screenH) {
 			y = MainView.screenH - bmpPlayer.getHeight();
+			mYMoveTo = -1;
 		} else if (y <= 0) {
 			y = 0;
+			mYMoveTo = -1;
+		}
+		
+		if(x == mXMoveTo && y == mYMoveTo){
+			mYMoveTo = -1;
+			mXMoveTo = -1;
 		}
 	}
     
