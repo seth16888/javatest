@@ -1,10 +1,10 @@
 package com.example.javatest;
 
-import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -22,20 +22,26 @@ import android.view.SurfaceView;
  */
 public class MainView extends SurfaceView implements Callback,Runnable{
 	private SurfaceHolder sfh;	//SurfaceView的控制器
-	
+	private MainActivity activity;		//主控界面的引用
 	private Canvas canvas;
 	private Paint paint;
+	private GameBg backGround;	//游戏背景
+	private Bitmap bmpBackGround;	//背景图片
+	private Player player;
+	private Bitmap bmpPlayer;//游戏主角飞机
+	private Bitmap bmpPlayerHp;//主角飞机血量
 	
 	private Thread th;	//游戏主线程
 	
 	private boolean flag;	//线程结束标志
 	 public static int screenW,screenH;	//屏幕宽、高
 	
-	public MainView(Context context) {
-		super(context);
+	public MainView(MainActivity activity) {
+		super(activity);
+		this.activity = activity;	//主控界面的引用
 		Log.d("1","构造函数");
 		sfh = this.getHolder();
-		sfh.addCallback(this);	////控制器与本实例连接
+		sfh.addCallback(this);	//控制器与本实例连接
 		paint = new Paint();
 		paint.setColor(Color.BLACK);
 		paint.setAntiAlias(true);		//初始化画笔
@@ -92,6 +98,12 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	 * 自定义的游戏初始化函数
 	 */
 	private void initGame(){
+		bmpBackGround = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+		backGround = new GameBg(bmpBackGround);	//初始化背景类
+		bmpPlayer = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+		bmpPlayerHp = BitmapFactory.decodeResource(getResources(), R.drawable.hp);
+		//实例主角
+		player = new Player(bmpPlayer, bmpPlayerHp);
 		
 	}
 
@@ -100,7 +112,10 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	 */
 	private void logic(){
 		//逻辑处理根据游戏状态不同进行不同处理
-		
+		//背景逻辑
+		backGround.logic();
+		//主角逻辑
+		player.logic();
 	}
 	
 	/**
@@ -108,11 +123,13 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	 */
 	public void myDraw(){
 		try {
-			canvas = sfh.lockCanvas();		//通过SurfaceHolder控制器获取并且锁定Canvas画布
+			canvas = sfh.lockCanvas();		//在自定义线程中，通过SurfaceHolder控制器获取并且锁定Canvas画布
 			if (canvas != null) {
 				canvas.drawColor(Color.WHITE);	//刷屏
-				//绘图函数根据游戏状态不同进行不同绘制
-				canvas.drawText("游戏框架", 10, 10, paint);
+				//游戏背景
+				backGround.draw(canvas, paint);
+				//主角绘图函数
+				player.draw(canvas, paint);
 				
 			}
 		} catch (Exception e) {
@@ -126,6 +143,32 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		Log.d("1","onKeyDown");
+		if(keyCode == KeyEvent.KEYCODE_BACK){
+			//按下了Back键
+			activity.myHandler.sendEmptyMessage(3);
+			return true;	//阻断系统不要继续退出。
+		}
+		//主角的按键按下事件
+		player.onKeyDown(keyCode, event);
+		
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	/**
+	 * 按键抬起事件监听
+	 */
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		//处理back返回按键
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			//按下了Back键
+			activity.myHandler.sendEmptyMessage(3);
+			//表示此按键已处理，不再交给系统处理，
+			//从而避免游戏被切入后台
+			return true;
+		}
+		//按键抬起事件
+		player.onKeyUp(keyCode, event);
 		
 		return super.onKeyDown(keyCode, event);
 	}
