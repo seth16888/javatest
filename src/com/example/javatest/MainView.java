@@ -115,7 +115,7 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 				
 			}
 		} catch (Exception e) {
-			// TODO: handle exception	
+			e.printStackTrace();
 		} finally {
 			if (canvas != null)
 				sfh.unlockCanvasAndPost(canvas);	//½âËø
@@ -124,14 +124,14 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		Log.d("2","onKeyDown");
+		Log.d("1","onKeyDown");
 		
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		Log.d("2","onTouchEvent");
+		Log.d("1","onTouchEvent");
 		return super.onTouchEvent(event);
 	}
 	
