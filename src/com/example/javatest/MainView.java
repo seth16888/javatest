@@ -33,6 +33,7 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	
 	public MainView(Context context) {
 		super(context);
+		Log.d("1","构造函数");
 		sfh = this.getHolder();
 		sfh.addCallback(this);	////控制器与本实例连接
 		paint = new Paint();
