@@ -21,8 +21,11 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 	Bitmap btnStartGame;	//开始游戏按钮图片
 	Bitmap btnStartGamePressed;	//按下了的开始游戏按钮图片
 	MyButton btnStartButton;		//开始游戏按钮
+	MyButton btnHelpMenu;		//菜单帮助按钮
+	Bitmap bmpHelpMenu;	//开始游戏按钮图片
 	
 	int btnStartGameX,btnStartGameY;	//开始游戏按钮的x,y坐标
+	int btnHelpMenuX, btnHelpMenuY;	//帮助菜单x,y坐标
 	
 	public WelcomeView(MainActivity activity){
 		super(activity);
@@ -40,10 +43,16 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 		bgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.welcome);
 		btnStartGame = BitmapFactory.decodeResource(getResources(), R.drawable.button);
 		btnStartGamePressed = BitmapFactory.decodeResource(getResources(), R.drawable.button_press);
-		btnStartGameX = 320/2 - btnStartGame.getWidth()/2;	//开始按钮x坐标
-		btnStartGameY = 480 - btnStartGame.getHeight() -40;	//开始按钮y坐标
+		bmpHelpMenu = BitmapFactory.decodeResource(getResources(), R.drawable.button_help);	//帮助菜单图片
+		
+		btnStartGameX = MainActivity.SCREEN_WIDTH / 2 - btnStartGame.getWidth() / 2;	//开始按钮x坐标
+		btnStartGameY = MainActivity.SCREEN_HEIGHT / 2 + 10;	//开始按钮y坐标
+		//btnHelpMenuX = MainActivity.SCREEN_WIDTH/2 - btnStartGame.getWidth()/2;	//帮助菜单x坐标
+		btnHelpMenuX = btnStartGameX;
+		btnHelpMenuY = btnStartGameY + btnStartGame.getHeight() + 10;	//帮助菜单y坐标
 		
 		btnStartButton = new MyButton(btnStartGame,btnStartGameX,btnStartGameY);
+		btnHelpMenu = new MyButton(bmpHelpMenu,btnHelpMenuX,btnHelpMenuY);
 	}
 	
 	@Override
@@ -77,6 +86,7 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 				canvas.drawBitmap(bgBitmap, 0, 0, paint);	//绘制背景图片
 				//canvas.drawBitmap(btnStartGame, btnStartGameX,btnStartGameY, paint);
 				btnStartButton.draw(canvas, paint);
+				btnHelpMenu.draw(canvas, paint);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -106,6 +116,10 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 		if(btnStartButton.isPressed(event)){
 			//开始按钮被按下
 			activity.myHandler.sendEmptyMessage(2);		//告诉主界面，按了开始游戏键
+		}
+		if(btnHelpMenu.isPressed(event)){
+			//开始按钮被按下
+			activity.myHandler.sendEmptyMessage(4);		//告诉主界面，按了帮助菜单
 		}
 		
 		return super.onTouchEvent(event);

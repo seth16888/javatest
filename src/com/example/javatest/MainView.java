@@ -53,6 +53,7 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 		//设置可获取焦点
 		setFocusable(true);
 		setFocusableInTouchMode(true);
+		requestFocus();	//获取焦点，拥有捕获keydown
 		// 设置背景高亮
 		this.setKeepScreenOn(true);
 		

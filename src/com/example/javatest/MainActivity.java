@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -28,6 +29,10 @@ public class MainActivity extends Activity {
 	WelcomeView welcomeView;
 	HelpView helpView;
 	
+	public static int SCREEN_WIDTH, SCREEN_HEIGHT;	//屏幕宽度，高度
+	public static int DENSITY_DPI;	//屏幕密度DPI
+	public static float DENSITY;		//屏幕密度
+	
 	Handler myHandler = new Handler(){//用来更新UI线程中的控件
 		public void handleMessage(android.os.Message msg) {
 			if(msg.what == 2){
@@ -43,6 +48,19 @@ public class MainActivity extends Activity {
 				}
 				welcomeView = new WelcomeView(MainActivity.this);
 				toWelcomeView();
+			}else if(msg.what == 4){
+				//接收到欢迎界面发来的消息，用户按下了帮助菜单
+				if(welcomeView != null){
+					welcomeView = null;	//结束欢迎界面
+				}
+				helpView = new HelpView(MainActivity.this);
+				toHelpView();
+			}else if(msg.what == 5){	//帮助界面返回欢迎界面
+				if(helpView != null){
+					helpView = null;
+				}
+				welcomeView = new WelcomeView(MainActivity.this);
+				toWelcomeView();
 			}
 			
 		}
@@ -54,12 +72,22 @@ public class MainActivity extends Activity {
     public void toGameView(){//初始游戏界面
     	this.setContentView(gameView);
     }
-		
+	public void toHelpView(){		//切换到帮助界面
+		this.setContentView(helpView);
+	}
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//setContentView(R.layout.activity_main);
 		//setContentView(new MainView(this));
+		 DisplayMetrics metric = new DisplayMetrics();
+	     getWindowManager().getDefaultDisplay().getMetrics(metric);
+	     SCREEN_WIDTH = metric.widthPixels;     // 屏幕宽度（像素）
+	     SCREEN_HEIGHT = metric.heightPixels;   // 屏幕高度（像素）
+	     DENSITY = metric.density;      // 屏幕密度（0.75 / 1.0 / 1.5）
+	     DENSITY_DPI = metric.densityDpi;  // 屏幕密度DPI（120 / 160 / 240）
+	        
 		//全屏
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
