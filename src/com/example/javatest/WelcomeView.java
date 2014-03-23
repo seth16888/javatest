@@ -1,10 +1,13 @@
 package com.example.javatest;
 
+import java.io.IOException;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -23,6 +26,7 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 	MyButton btnStartButton;		//开始游戏按钮
 	MyButton btnHelpMenu;		//菜单帮助按钮
 	Bitmap bmpHelpMenu;	//开始游戏按钮图片
+	MediaPlayer mpWelcome;		//背景播放器
 	
 	int btnStartGameX,btnStartGameY;	//开始游戏按钮的x,y坐标
 	int btnHelpMenuX, btnHelpMenuY;	//帮助菜单x,y坐标
@@ -51,8 +55,8 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 		btnHelpMenuX = btnStartGameX;
 		btnHelpMenuY = btnStartGameY + btnStartGame.getHeight() + 10;	//帮助菜单y坐标
 		
-		btnStartButton = new MyButton(btnStartGame,btnStartGameX,btnStartGameY);
-		btnHelpMenu = new MyButton(bmpHelpMenu,btnHelpMenuX,btnHelpMenuY);
+		btnStartButton = new MyButton(getContext(),btnStartGame,btnStartGameX,btnStartGameY);
+		btnHelpMenu = new MyButton(getContext(), bmpHelpMenu,btnHelpMenuX,btnHelpMenuY);
 	}
 	
 	@Override
@@ -64,12 +68,28 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 	@Override
 	public void surfaceCreated(SurfaceHolder arg0) {
 		myDraw();	//绘制界面
-		
+		mpWelcome = MediaPlayer.create(getContext(), R.raw.welcome1);	//音乐播放器初始化
+		mpWelcome.setLooping(true);
+		try {
+			if(mpWelcome != null){
+				mpWelcome.stop();
+			}
+			mpWelcome.prepare();	//音乐预处理
+			mpWelcome.start();		//播放音乐
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder arg0) {
-		// TODO Auto-generated method stub
+		if(mpWelcome != null){
+			mpWelcome.stop();
+			mpWelcome.release();
+			mpWelcome = null;
+		}
 		
 	}
 

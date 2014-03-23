@@ -1,10 +1,13 @@
 package com.example.javatest;
 
+import java.io.IOException;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
@@ -35,6 +38,7 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 	private GestureDetector mGestureDetetor;	//手势检测
 	private	 int verticalMinDistance = 20;  
 	private	 int minVelocity         = 0; 	//滑动检测参数
+	MediaPlayer mpWelcome;		//背景播放器
 	
 	private Thread th;	//游戏主线程
 	
@@ -94,12 +98,31 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 		th = new Thread(this);
 		//启动线程
 		th.start();
+		
+		mpWelcome = MediaPlayer.create(getContext(), R.raw.gamestart);	//音乐播放器初始化
+		mpWelcome.setLooping(true);
+		try {
+			if(mpWelcome != null){
+				mpWelcome.stop();
+			}
+			mpWelcome.prepare();	//音乐预处理
+			mpWelcome.start();		//播放音乐
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder arg0) {
 		Log.d("1", "surfaceDestroyed");
 		flag = false;	//退出时，结束游戏线程
+		if(mpWelcome != null){
+			mpWelcome.stop();
+			mpWelcome.release();
+			mpWelcome = null;
+		}
 	}
 	
 	/**
