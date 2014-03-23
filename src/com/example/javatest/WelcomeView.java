@@ -18,8 +18,9 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 	MainActivity activity; //activity的引用
 	Paint paint;//画笔
 	Bitmap bgBitmap;	//背景图片
-	Bitmap btnStartGame;	//开始游戏按钮
-	Bitmap btnStartGamePressed;	//按下了的开始游戏按钮
+	Bitmap btnStartGame;	//开始游戏按钮图片
+	Bitmap btnStartGamePressed;	//按下了的开始游戏按钮图片
+	MyButton btnStartButton;		//开始游戏按钮
 	
 	int btnStartGameX,btnStartGameY;	//开始游戏按钮的x,y坐标
 	
@@ -28,7 +29,6 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 		this.activity = activity;
 		getHolder().addCallback(this);
 		initBitmap();
-		
 	}
 
 	/**
@@ -42,6 +42,8 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 		btnStartGamePressed = BitmapFactory.decodeResource(getResources(), R.drawable.button_press);
 		btnStartGameX = 320/2 - btnStartGame.getWidth()/2;	//开始按钮x坐标
 		btnStartGameY = 480 - btnStartGame.getHeight() -40;	//开始按钮y坐标
+		
+		btnStartButton = new MyButton(btnStartGame,btnStartGameX,btnStartGameY);
 	}
 	
 	@Override
@@ -73,7 +75,8 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 			if (canvas != null) {
 				canvas.drawColor(Color.WHITE);// 背景色
 				canvas.drawBitmap(bgBitmap, 0, 0, paint);	//绘制背景图片
-				canvas.drawBitmap(btnStartGame, btnStartGameX,btnStartGameY, paint);
+				//canvas.drawBitmap(btnStartGame, btnStartGameX,btnStartGameY, paint);
+				btnStartButton.draw(canvas, paint);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -88,7 +91,7 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 	 */
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if(event.getAction() == MotionEvent.ACTION_DOWN){
+		/*if(event.getAction() == MotionEvent.ACTION_DOWN){
 			//在触摸屏上按下
 			double x = event.getX();	//得到X坐标
 			double y = event.getY();	//得到Y坐标
@@ -99,7 +102,12 @@ public class WelcomeView extends SurfaceView  implements SurfaceHolder.Callback{
 				activity.myHandler.sendEmptyMessage(2);		//告诉主界面，按了开始游戏键
 			}
 			
+		}*/
+		if(btnStartButton.isPressed(event)){
+			//开始按钮被按下
+			activity.myHandler.sendEmptyMessage(2);		//告诉主界面，按了开始游戏键
 		}
+		
 		return super.onTouchEvent(event);
 	}
 	
