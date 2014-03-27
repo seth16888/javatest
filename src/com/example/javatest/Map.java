@@ -200,6 +200,7 @@ public class Map {
 					}else if (r == 0){
 						//顶行
 						Diamond diamond = new Diamond();
+						diamond.isMove =true;
 						diamonds.diamonds[r][c] = diamond;
 					}
 				}//if
@@ -247,7 +248,7 @@ public class Map {
 				}
 			}
 		}//if
-		if(r > 0){
+		if(r >= 0){
 			for(int i = r; i>= 0; i--){  //包括自己
 				//往上
 				int tmp = diamonds.diamonds[i][c].type;
@@ -366,27 +367,7 @@ public class Map {
 		diamonds.diamonds[x2][y2].type = dmt1;
 		diamonds.diamonds[x2][y2].isDead = isDead;
 		//改变悬空状态
-		boolean tmpXK = false;
-		for(int r = x1+1; r<= rows-1; r++){
-			if(diamonds.diamonds[r][y1].isDead){
-				tmpXK = true;
-				break;
-			}
-		}
-		if(tmpXK){
-			diamonds.diamonds[x1][y1].xuanKong = tmpXK;
-		}
-		
-		tmpXK = false;
-		for(int r = x2+1; r<= rows-1; r++){
-			if(diamonds.diamonds[r][y2].isDead){
-				tmpXK = true;
-				break;
-			}
-		}
-		if(tmpXK){
-			diamonds.diamonds[x2][y2].xuanKong = tmpXK;
-		}
+		setXuanKong();
 		//设置移动了位置
 		diamonds.diamonds[x1][y1].isMove = true;
 		diamonds.diamonds[x2][y2].isMove = true;
@@ -435,7 +416,7 @@ public class Map {
 				}
 			}
 		}//if
-		if(r > 0){
+		if(r >= 0){
 			for(int i = r; i>= 0; i--){  //包括自己
 				//往上
 				int tmp = diamonds.diamonds[i][c].type;
