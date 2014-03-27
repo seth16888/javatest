@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -22,29 +23,41 @@ import android.view.SurfaceView;
  * SurfaceView存放视图的数据、canvas等，靠SurfaceHolder控制
  * 1.测试SurfaceView生命周期
  * 2.在运行时，按Back键、Home键，再返回应用，SurfaceView运行情况
+ * +
+ * 游戏架构：
+ * GameBg类，游戏背景类 , 绘制背景图，顶部LOGO、倒计时, 底部:音效开关，背景音乐开关，当前关卡分数和关卡名
+ * GameBgThread类，游戏背景更新
+ * Map类，根据关卡载入底层地图(10*12地图数组)，过关需要的特殊格子，维护过关格子的状态。
+ * Diamonds类，根据地图，随机生成钻石，钻石地图位置的维护，钻石的位置交换，钻石的消除。
+ * MapDraw类，地图绘制，包括底层地图，地图上的钻石
+ * Diamond类，钻石类
+ * MainView类，维护游戏进程，接收玩家动作。
  * @author seth16888
  *
  */
-public class MainView extends SurfaceView implements Callback,Runnable,OnGestureListener{
+public class MainView extends SurfaceView implements Callback,Runnable{
 	private SurfaceHolder sfh;	//SurfaceView的控制器
 	private MainActivity activity;		//主控界面的引用
 	private Canvas canvas;
 	private Paint paint;
-	private GameBg backGround;	//游戏背景
+	public GameBg backGround;	//游戏背景
 	private Bitmap bmpBackGround;	//背景图片
-	private Player player;
-	private Bitmap bmpPlayer;//游戏主角飞机
-	private Bitmap bmpPlayerHp;//主角飞机血量
-	private GestureDetector mGestureDetetor;	//手势检测
-	private	 int verticalMinDistance = 20;  
-	private	 int minVelocity         = 0; 	//滑动检测参数
+	public Map map;
+	//private GestureDetector mGestureDetetor;	//手势检测
+	//private	 int verticalMinDistance = 20;  
+	//private	 int minVelocity         = 0; 	//滑动检测参数
 	MediaPlayer mpWelcome;		//背景播放器
 	
 	private Thread th;	//游戏主线程
 	
 	private boolean flag;	//线程结束标志
 	 public static int screenW,screenH;	//屏幕宽、高
-	
+	//成绩
+	 public int score;
+	 public Point SelectFirst;	//选中的第一个
+	 public Point SelectTarget;	//选中的第二个位置交换的目标
+	 public boolean actionFlag;	//是否接收用户动作
+	 
 	public MainView(MainActivity activity) {
 		super(activity);
 		this.activity = activity;	//主控界面的引用
@@ -55,13 +68,17 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 		paint.setColor(Color.BLACK);
 		paint.setAntiAlias(true);		//初始化画笔
 		//设置可获取焦点
-		setFocusable(true);
+		//setFocusable(true);
 		setFocusableInTouchMode(true);
 		requestFocus();	//获取焦点，拥有捕获keydown
 		// 设置背景高亮
 		this.setKeepScreenOn(true);
-		
-		mGestureDetetor = new GestureDetector(this);
+		SelectFirst = new Point();
+		SelectTarget = new Point();
+		SelectFirst.x = -1;
+		SelectFirst.y = -1;
+		SelectTarget.x = -1;
+		SelectTarget.y =-1;
 	}
 	
 	@Override
@@ -98,6 +115,8 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 		th = new Thread(this);
 		//启动线程
 		th.start();
+		//接收用户动作
+		actionFlag = true;
 		
 		mpWelcome = MediaPlayer.create(getContext(), R.raw.gamestart);	//音乐播放器初始化
 		mpWelcome.setLooping(true);
@@ -130,12 +149,9 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 	 */
 	private void initGame(){
 		bmpBackGround = BitmapFactory.decodeResource(getResources(), R.drawable.background);
-		backGround = new GameBg(bmpBackGround);	//初始化背景类
-		bmpPlayer = BitmapFactory.decodeResource(getResources(), R.drawable.player);
-		bmpPlayerHp = BitmapFactory.decodeResource(getResources(), R.drawable.hp);
-		//实例主角
-		player = new Player(bmpPlayer, bmpPlayerHp);
-		
+		backGround = new GameBg(this, bmpBackGround);	//初始化背景类
+		map = new Map(this);
+
 	}
 
 	/**
@@ -143,10 +159,9 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 	 */
 	private void logic(){
 		//逻辑处理根据游戏状态不同进行不同处理
+		//score += Math.random() * 10;
 		//背景逻辑
 		backGround.logic();
-		//主角逻辑
-		player.logic();
 	}
 	
 	/**
@@ -159,9 +174,8 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 				canvas.drawColor(Color.WHITE);	//刷屏
 				//游戏背景
 				backGround.draw(canvas, paint);
-				//主角绘图函数
-				player.draw(canvas, paint);
-				
+				//mapDraw.myDraw(canvas, paint);
+				map.myDraw(canvas, paint);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -179,8 +193,6 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 			activity.myHandler.sendEmptyMessage(3);
 			return true;	//阻断系统不要继续退出。
 		}
-		//主角的按键按下事件
-		player.onKeyDown(keyCode, event);
 		
 		return super.onKeyDown(keyCode, event);
 	}
@@ -198,8 +210,6 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 			//从而避免游戏被切入后台
 			return true;
 		}
-		//按键抬起事件
-		player.onKeyUp(keyCode, event);
 		
 		return super.onKeyDown(keyCode, event);
 	}
@@ -207,67 +217,12 @@ public class MainView extends SurfaceView implements Callback,Runnable,OnGesture
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		Log.d("1","onTouchEvent");
+		if(actionFlag){	//正常接收用户动作的状态
+			map.playAction(event);
+		}
 		return super.onTouchEvent(event);
 	}
 
-	@Override
-	public boolean onDown(MotionEvent e) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-			float velocityY) {
-		Log.i("1","onFling");
-
-	    if	(e1.getX() - e2.getX() > verticalMinDistance && Math.abs(velocityX) > minVelocity) { 
-	    	//像左
-	    	int mmx = player.x - (int)(e1.getX() - e2.getX());
-	    	player.setmXMoveTo(mmx);
-	    }
-	    if (e2.getX() - e1.getX() > verticalMinDistance && Math.abs(velocityX) > minVelocity) { 
-	    	//向右
-	    	int mmx = player.x + (int)(e2.getX() - e1.getX());
-	    	player.setmXMoveTo(mmx);
-	    }
-	    if(e2.getY() < e1.getY()){
-	    	//向上
-	    	int mmy = player.y - (int)(e2.getY() - e1.getY());
-	    	player.setmYMoveTo(mmy);
-	    }
-	    if(e2.getY() > e1.getY()){
-	    	//向下
-	    	int mmy = player.y + (int)(e1.getY() - e2.getY());
-	    	player.setmYMoveTo(mmy);
-	    }
-		return false;
-	}
-
-	@Override
-	public void onLongPress(MotionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-			float distanceY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void onShowPress(MotionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean onSingleTapUp(MotionEvent e) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 	
 	
 

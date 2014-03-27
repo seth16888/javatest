@@ -2,53 +2,52 @@ package com.example.javatest;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 
 /**
  * @author seth16888
- *
+ * 游戏场景类
+ * 绘制背景图，顶部LOGO、倒计时, 底部:音效开关，背景音乐开关，当前关卡分数和关卡名
+ * 
  */
 public class GameBg {
+	MainView vw;
 	//游戏背景的图片资源
-	//为了循环播放，这里定义两个位图对象，
-	//其资源引用的是同一张图片
 	private Bitmap bmpBackGround1;
-	private Bitmap bmpBackGround2;
 	//游戏背景坐标
-	private int bg1x, bg1y, bg2x, bg2y;
-	//背景滚动速度
-	private int speed = 3;
+	private int bg1x, bg1y;
 
 	//游戏背景构造函数
-	public GameBg(Bitmap bmpBackGround) {
+	public GameBg(MainView view, Bitmap bmpBackGround) {
+		vw = view;
 		this.bmpBackGround1 = bmpBackGround;
-		this.bmpBackGround2 = bmpBackGround;
 		//首先让第一张背景底部正好填满整个屏幕
 		bg1y = -Math.abs(bmpBackGround1.getHeight() - MainView.screenH);
-		//第二张背景图紧接在第一张背景的上方
-		//+101的原因：虽然两张背景图无缝隙连接但是因为图片资源头尾
-		//直接连接不和谐，为了让视觉看不出是两张图连接而修正的位置
-		bg2y = bg1y - bmpBackGround1.getHeight() + 111;
 	}
 	//游戏背景的绘图函数
 	public void draw(Canvas canvas, Paint paint) {
-		//绘制两张背景
-		canvas.drawBitmap(bmpBackGround1, bg1x, bg1y, paint);
-		canvas.drawBitmap(bmpBackGround2, bg2x, bg2y, paint);
+		Paint pt = new Paint();
+		pt.setColor(Color.WHITE);
+		pt.setStyle(Style.STROKE);
+		pt.setStyle(Style.FILL);
+		//绘制背景
+		//canvas.drawBitmap(bmpBackGround1, bg1x, bg1y, paint);
+		canvas.drawColor(Color.WHITE);
+		canvas.drawRect(0,0,MainView.screenW,50,pt);
+		canvas.drawRect(0,MainView.screenH - 50,MainView.screenW, MainView.screenH, pt);
+		pt.setColor(Color.BLUE);
+		//绘制顶部
+		canvas.drawText("LOGO", 10, 10, pt);
+		//绘制底部
+		canvas.drawText("成绩:", 10, MainView.screenH - 10, pt);
+		canvas.drawText(String.valueOf(vw.score), 60, MainView.screenH - 10, pt);
+		canvas.drawText(String.valueOf(vw.SelectFirst != null ? vw.SelectFirst.x : 0), 90, MainView.screenH - 10, pt);
+		canvas.drawText(String.valueOf(vw.SelectFirst != null ? vw.SelectFirst.y : 0), 110, MainView.screenH - 10, pt);
 	}
 	//游戏背景的逻辑函数
 	public void logic() {
-		bg1y += speed;
-		bg2y += speed;
-		//当第一张图片的Y坐标超出屏幕，
-		//立即将其坐标设置到第二张图的上方
-		if (bg1y > MainView.screenH) {
-			bg1y = bg2y - bmpBackGround1.getHeight() + 111;
-		}
-		//当第二张图片的Y坐标超出屏幕，
-		//立即将其坐标设置到第一张图的上方
-		if (bg2y > MainView.screenH) {
-			bg2y = bg1y - bmpBackGround1.getHeight() + 111;
-		}
+
 	}
 }

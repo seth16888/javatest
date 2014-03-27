@@ -2,7 +2,6 @@ package com.example.javatest;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -22,7 +21,6 @@ import android.view.WindowManager;
  * @author seth16888
  *
  */
-@SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
 
 	MainView gameView;
