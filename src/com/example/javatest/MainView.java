@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.media.MediaPlayer;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
@@ -52,6 +53,7 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	
 	private boolean flag;	//线程结束标志
 	 public static int screenW,screenH;	//屏幕宽、高
+	 public static int DPI;	//屏幕密度
 	//成绩
 	 public int score;
 	 public Point SelectFirst;	//选中的第一个
@@ -107,8 +109,11 @@ public class MainView extends SurfaceView implements Callback,Runnable{
 	@Override
 	public void surfaceCreated(SurfaceHolder arg0) {
 		Log.d("1", "surfaceCreated");
-		screenW = this.getWidth();
-		screenH = this.getHeight();	//在surfaceCreated时，才能换取高宽
+		DisplayMetrics metric = new DisplayMetrics();
+		activity.getWindowManager().getDefaultDisplay().getMetrics(metric);
+		screenW = metric.widthPixels;
+		screenH = metric.heightPixels;	
+		DPI = metric.densityDpi;
 		initGame();	//初始化游戏
 		flag = true;
 		//实例线程
